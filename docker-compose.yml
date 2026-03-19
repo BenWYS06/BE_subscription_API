@@ -1,0 +1,27 @@
+services:
+  mongodb:
+    image: mongo:8
+    container_name: mongodb-rs
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+    command:
+      - bash
+      - -c
+      - |
+        if [ ! -f /data/configdb/keyfile ]; then
+          openssl rand -base64 756 > /data/configdb/keyfile;
+          chmod 600 /data/configdb/keyfile;
+          chown 999:999 /data/configdb/keyfile;
+        fi;
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /data/configdb/keyfile
+    volumes:
+      - mongo_rs_data:/data/db
+      - mongo_rs_config:/data/configdb
+
+volumes:
+  mongo_rs_data:
+  mongo_rs_config:
