@@ -30,3 +30,55 @@ export const getUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const updateUser = async (req, res, next) => {
+  try {
+    // Only allow certain fields to be updated
+    const { name, email } = req.body;
+
+    // Owner or admin
+    if (req.user.id !== req.params.id && req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { name, email },
+      { new: true },
+    ).select("-password");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteUser = async (req, res, next) => {
+  try {
+    if (req.user.id !== req.params.id && req.user.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Forbidden" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { deletedAt: new Date() },
+      { new: true },
+    ).select("-password");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User deactivated" });
+  } catch (error) {
+    next(error);
+  }
+};
