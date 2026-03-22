@@ -41,11 +41,20 @@ export const updateUser = async (req, res, next) => {
       return res.status(403).json({ success: false, message: "Forbidden" });
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { name, email },
-      { new: true },
-    ).select("-password");
+    const updates = {};
+    if (name != undefined) updates.name = name;
+    if (email != undefined) updates.email = email;
+
+    if (Object.keys(updates).length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No data to update" });
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true, // check valid schema model again.
+    }).select("-password");
 
     if (!user) {
       return res

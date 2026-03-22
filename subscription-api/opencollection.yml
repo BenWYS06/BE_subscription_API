@@ -1,7 +1,7 @@
 opencollection: 1.0.0
 
 info:
-  name: subscription-api
+  name: BrunoTest
 bundled: false
 extensions:
   bruno:
